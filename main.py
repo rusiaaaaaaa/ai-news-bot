@@ -4,8 +4,7 @@ import requests
 from datetime import datetime
 import pytz
 
-# 최신 Google GenAI 패키지
-from google import genai
+import google.genai as genai
 
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('CHAT_ID')
@@ -15,7 +14,6 @@ def main():
     now = datetime.now(KST)
     hour = now.hour
 
-    # KST 07:00 ~ 01:00 사이에만 뉴스 생성 및 전송
     if not (7 <= hour or hour <= 1):
         print(f"시간 외 스킵 ({now.strftime('%H:%M KST')})")
         return
@@ -32,9 +30,8 @@ def main():
         feed = feedparser.parse(url)
         for entry in feed.entries[:10]:
             title = entry.title
-            link = entry.link
-            desc = (entry.get('summary') or entry.get('description') or '')[:180]
             pub_date = entry.get('published', '날짜 없음')
+            desc = (entry.get('summary') or entry.get('description') or '')[:180]
             all_news.append(f"{title}\n{pub_date}\n{desc}...")
 
     news_text = "\n\n".join(all_news[:8])
@@ -53,12 +50,8 @@ def main():
 {news_text}"""
 
     try:
-        # 최신 방식: 모델 생성 시 api_key 전달
-        model = genai.GenerativeModel(
-            model_name='gemini-2.5-flash',
-            generation_config={"api_key": os.getenv('GEMINI_API_KEY')}
-        )
-
+        genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
+        model = genai.GenerativeModel('gemini-2.5-flash')
         response = model.generate_content(prompt)
         summary = response.text.strip()
 
@@ -69,12 +62,9 @@ def main():
             'parse_mode': 'Markdown'
         }
         r = requests.post(telegram_url, data=payload)
-        if r.status_code == 200:
-            print("Telegram 전송 성공")
-        else:
-            print(f"Telegram 전송 실패: {r.status_code} {r.text}")
+        print(f"Telegram 응답: {r.status_code} - {r.text[:150]}")
     except Exception as e:
-        print(f"오류 발생: {str(e)}")
+        print(f"오류: {str(e)}")
 
 if __name__ == "__main__":
     main()
