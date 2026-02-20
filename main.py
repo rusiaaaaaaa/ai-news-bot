@@ -3,8 +3,7 @@ import feedparser
 import requests
 from datetime import datetime
 import pytz
-
-import google.genai as genai
+import google.generativeai as genai  # ✅ 수정
 
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('CHAT_ID')
@@ -13,7 +12,6 @@ KST = pytz.timezone('Asia/Seoul')
 def main():
     now = datetime.now(KST)
     hour = now.hour
-
     if not (7 <= hour or hour <= 1):
         print(f"시간 외 스킵 ({now.strftime('%H:%M KST')})")
         return
@@ -37,9 +35,7 @@ def main():
     news_text = "\n\n".join(all_news[:8])
 
     prompt = f"""지금은 한국시간 {now.strftime('%m월 %d일 %H:%M')}입니다.
-
 아래 최신 AI 관련 뉴스를 다음 형식으로 요약해주세요.
-
 - 가장 중요한 4~6개 뉴스만 선별
 - 각 뉴스를 자세히 설명
 - 링크는 포함하지 말 것
@@ -51,7 +47,7 @@ def main():
 
     try:
         genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
-        model = genai.GenerativeModel('gemini-2.5-flash')
+        model = genai.GenerativeModel('gemini-1.5-flash')  # ✅ 수정
         response = model.generate_content(prompt)
         summary = response.text.strip()
 
@@ -63,8 +59,17 @@ def main():
         }
         r = requests.post(telegram_url, data=payload)
         print(f"Telegram 응답: {r.status_code} - {r.text[:150]}")
+
     except Exception as e:
         print(f"오류: {str(e)}")
 
 if __name__ == "__main__":
     main()
+```
+
+그리고 `requirements.txt`도 확인해서 아래처럼 되어 있어야 합니다:
+```
+google-generativeai  # ✅ google-genai 아님
+feedparser
+requests
+pytz
