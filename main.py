@@ -54,21 +54,22 @@ prompt = f"""지금은 한국시간 {now.strftime('%m월 %d일 %H:%M')}입니다
 뉴스 원문:
 {news_text}"""
 
-    try:
-        response = model.generate_content(prompt)
-        summary = response.text
+# ... 이전 코드 ...
 
-        # Telegram 전송
-        telegram_url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-        payload = {
-            'chat_id': CHAT_ID,
-            'text': f"📰 **AI 뉴스 브리핑** ({now.strftime('%m/%d %H:%M KST')})\n\n{summary}",
-            'parse_mode': 'Markdown'
-        }
-        requests.post(telegram_url, data=payload)
-        print("✅ Telegram 전송 완료!")
-    except Exception as e:
-        print(f"❌ 오류: {e}")
+try:
+    response = model.generate_content(prompt)
+    summary = response.text
+
+    telegram_url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+    payload = {
+        'chat_id': CHAT_ID,
+        'text': f"AI 뉴스 브리핑 ({now.strftime('%m/%d %H:%M KST')})\n\n{summary}",
+        'parse_mode': 'Markdown'
+    }
+    requests.post(telegram_url, data=payload)
+    print("✅ Telegram 전송 완료!")
+except Exception as e:
+    print(f"❌ 오류: {e}")
 
 if __name__ == "__main__":
     main()
