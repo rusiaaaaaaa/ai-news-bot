@@ -2,7 +2,7 @@ name: AI News Bot
 
 on:
   schedule:
-    - cron: '*/30 * * * *'    # 매 30분마다 (UTC 기준)
+    - cron: '*/30 * * * *'  # 매 30분마다 (UTC 기준)
   workflow_dispatch:          # 수동으로 테스트할 때 쓰는 버튼
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
 
       - name: 필요한 패키지 설치
         run: |
-          pip install google-genai feedparser requests pytz
+          pip install google-generativeai feedparser requests pytz
 
       - name: AI 뉴스 브리핑 보내기
         env:
