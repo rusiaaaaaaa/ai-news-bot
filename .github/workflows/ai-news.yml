@@ -20,7 +20,7 @@ jobs:
 
       - name: 필요한 패키지 설치
         run: |
-          pip install google-generativeai feedparser requests pytz
+          pip install google-genai feedparser requests pytz
 
       - name: AI 뉴스 브리핑 보내기
         env:
