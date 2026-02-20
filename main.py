@@ -3,7 +3,7 @@ import feedparser
 import requests
 from datetime import datetime
 import pytz
-import google.generativeai as genai  # ✅ 수정
+import google.generativeai as genai
 
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('CHAT_ID')
@@ -47,7 +47,7 @@ def main():
 
     try:
         genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
-        model = genai.GenerativeModel('gemini-1.5-flash')  # ✅ 수정
+        model = genai.GenerativeModel('gemini-1.5-flash')
         response = model.generate_content(prompt)
         summary = response.text.strip()
 
@@ -65,11 +65,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-```
-
-그리고 `requirements.txt`도 확인해서 아래처럼 되어 있어야 합니다:
-```
-google-generativeai  # ✅ google-genai 아님
-feedparser
-requests
-pytz
