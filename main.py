@@ -4,8 +4,8 @@ import requests
 from datetime import datetime
 import pytz
 
-# 새 패키지 import (google-genai)
-from google import genai
+# 새 Gemini SDK (google-genai) import
+import google.genai as genai
 
 # Gemini 설정
 genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
@@ -26,7 +26,6 @@ def main():
 
     print(f"AI 뉴스 브리핑 시작 ({now.strftime('%m/%d %H:%M KST')})")
 
-    # 최신 AI 뉴스 RSS
     rss_urls = [
         "https://news.google.com/rss/search?q=인공지능+OR+AI+OR+LLM+OR+Gemini+OR+Claude+OR+Grok&hl=ko&gl=KR&ceid=KR:ko",
         "https://news.google.com/rss/search?q=artificial+intelligence+OR+AI+OR+LLM+OR+Gemini+OR+Claude+OR+Grok&hl=en-US&gl=US&ceid=US:en"
@@ -68,7 +67,7 @@ def main():
         requests.post(telegram_url, data=payload)
         print("Telegram 전송 완료")
     except Exception as e:
-        print(f"오류: {e}")
+        print(f"오류: {str(e)}")
 
 if __name__ == "__main__":
     main()
