@@ -8,21 +8,35 @@ from google import genai
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('CHAT_ID')
 KST = pytz.timezone('Asia/Seoul')
+LAST_SENT_FILE = 'last_sent.txt'  # 마지막 전송 시간을 저장할 파일
 
 def main():
     now = datetime.now(KST)
     hour = now.hour
+
+    # 기존 시간대 체크 (오전 2~6시는 스킵)
     if not (7 <= hour or hour <= 1):
         print(f"시간 외 스킵 ({now.strftime('%H:%M KST')})")
         return
 
     print(f"브리핑 시작 ({now.strftime('%m/%d %H:%M KST')})")
 
+    # 3시간 주기 체크
+    if os.path.exists(LAST_SENT_FILE):
+        with open(LAST_SENT_FILE, 'r') as f:
+            last_str = f.read().strip()
+            last_time = datetime.fromisoformat(last_str)
+        
+        elapsed = (now - last_time).total_seconds()
+        if elapsed < 3 * 3600:  # 3시간 미만이면 스킵
+            print(f"3시간 미만 경과, 스킵 ({now.strftime('%H:%M KST')})")
+            return
+
+    # 뉴스 수집 및 요약 (기존 로직 그대로)
     rss_urls = [
         "https://news.google.com/rss/search?q=인공지능+OR+AI+OR+LLM+OR+Gemini+OR+Claude+OR+Grok&hl=ko&gl=KR&ceid=KR:ko",
         "https://news.google.com/rss/search?q=artificial+intelligence+OR+AI+OR+LLM+OR+Gemini+OR+Claude+OR+Grok&hl=en-US&gl=US&ceid=US:en"
     ]
-
     all_news = []
     for url in rss_urls:
         feed = feedparser.parse(url)
@@ -41,7 +55,6 @@ def main():
 - 링크는 포함하지 말 것
 - 불필요한 이모지나 장식은 사용하지 말 것
 - 각 뉴스의 일자, 시간 표시 (원문에 있는 published 날짜/시간 사용)
-
 뉴스 원문:
 {news_text}"""
 
@@ -61,6 +74,10 @@ def main():
         }
         r = requests.post(telegram_url, data=payload)
         print(f"Telegram 응답: {r.status_code} - {r.text[:150]}")
+
+        # 전송 성공 시 마지막 전송 시간 업데이트
+        with open(LAST_SENT_FILE, 'w') as f:
+            f.write(now.isoformat())
 
     except Exception as e:
         print(f"오류: {str(e)}")
